@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="msapplication-tap-highlight" content="no" />     
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+        <link rel="stylesheet" type="text/css" href="css/index.css" />
+        <title>madDiscovery</title>
+
+        <style type="text/css">
+            body{          
+                background: white;
+                width: 100%;
+                
+            }
+             h1 {    
+                background-color: yellow;
+                font-size: 30px;
+                font-style: italic;
+                margin-bottom: 5px;
+            }
+            section{
+                padding: 5px;
+            }
+        </style>
+      
+    </head>
+    <body>
+
+        <h1>EVENT LIST</h1>
+
+        <select id="searchTerm">
+          <option value="">Please Select....</option>
+          <option value="Competition">Competition</option>           
+          <option value="Concert">Concert</option>
+          <option value="Seminar">Seminar</option>
+        </select> 
+        <button name="search" onclick="search()">Search</button><button style="float:right;width:30px;height:25px;margin-right:5px" onclick="goAdd()">+</button>
+
+        <section id="test"></section>
+
+        <script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript" src="js/index.js"></script>
+        <script type="text/javascript" src="js/jquery-2.2.2.min.js"></script>    
+        <script type="text/javascript">
+    
+            $(document).ready(function(){               
+                var db = window.openDatabase("test", "1.0", "myDB", 1000000); 
+                db.transaction(queryDB,querySuccess);
+            });
+
+
+function goAdd()
+{
+  window.location = "addEvent.html";
+}
+
+function queryDB(tx) {
+    tx.executeSql('SELECT * FROM event', [], querySuccess, errorCB);
+}
+
+function deleteEvent(eventID)
+{
+    var EID = eventID;
+    
+    var db = window.openDatabase("test", "1.0", "myDB", 1000000); 
+
+     db.transaction(function(transaction) {
+     var executeQuery = "DELETE FROM event where id=?";
+     transaction.executeSql(executeQuery, [EID],
+     //On Success
+     function(tx, result) {alert('Delete successfully');},
+     //On Error
+     function(error){alert('Something went Wrong');});
+     });
+
+      location.reload();
+}
+
+function querySuccess(tx, results) {
+    var len = results.rows.length;
+    for (var i=0; i<len; i++){
+     $("#test").append("<h2>"+results.rows.item(i).name + "</h2><p>Location="+results.rows.item(i).location+"</p><p>Event Type="+results.rows.item(i).type+"<p>Date="+results.rows.item(i).date+"</p><p>Time="+results.rows.item(i).time+"</p><p>Organizer="+results.rows.item(i).organizer+"</p><button id="+results.rows.item(i).id+" onclick=deleteEvent(this.id)>Delete</button> <button id="+results.rows.item(i).id+" onclick=report(this.id)>Report</button><hr>") ;
+    }
+}
+
+function errorCB(err) 
+{
+    alert("No Event Currently");
+}
+
+
+function report(report)
+{
+    window.location ="report.html?id="+report;
+}
+
+function search()
+{    
+     $("#test").html('');
+    var term = $('#searchTerm').val();   
+    var db = window.openDatabase("test", "1.0", "myDB", 1000000);
+    db.transaction(function(transaction) 
+    {
+    transaction.executeSql('SELECT * FROM event WHERE type = ?', [term],
+     function (tx, results) 
+     {  
+         var len = results.rows.length; 
+        for (var i = 0; i < len; i++)
+        {
+             $("#test").append("<h2>"+results.rows.item(i).name + "</h2><p>Location="+results.rows.item(i).location+"</p><p>Event Type="+results.rows.item(i).type+"<p>Date="+results.rows.item(i).date+"</p><p>Time="+results.rows.item(i).time+"</p><p>Organizer="+results.rows.item(i).organizer+"</p><button id="+results.rows.item(i).id+" onclick=deleteEvent(this.id)>Delete</button><button id="+results.rows.item(i).id+" onclick=report(this.id)>Report</button><hr>") ;
+        }
+    });
+    });    
+}
+
+
+
+        </script>
+    </body>
+</html>
